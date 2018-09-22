@@ -382,6 +382,24 @@ module.exports = [
         equal: true
       }
     ]
+  },
+  {
+    description: 'sets',
+    tests: [
+      {
+        description: 'simple set',
+        value1: new Set([1]),
+        value2: new Set([1]),
+        equal: true
+      },
+      {
+        // Regression: https://github.com/FormidableLabs/react-fast-compare/issues/36
+        description: 'simple set not equal',
+        value1: new Set([1]),
+        value2: new Set([2]),
+        equal: false
+      }
+    ]
   }
 ];
 
