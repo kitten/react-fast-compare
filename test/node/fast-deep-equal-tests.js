@@ -384,6 +384,7 @@ module.exports = [
     ]
   },
   {
+    // Regression: https://github.com/FormidableLabs/react-fast-compare/issues/36
     description: 'sets',
     tests: [
       {
@@ -393,10 +394,33 @@ module.exports = [
         equal: true
       },
       {
-        // Regression: https://github.com/FormidableLabs/react-fast-compare/issues/36
         description: 'simple set not equal',
         value1: new Set([1]),
         value2: new Set([2]),
+        equal: false
+      },
+      {
+        description: 'complex set',
+        value1: new Set([1, { a: [ { b: 'c' } ] }]),
+        value2: new Set([1, { a: [ { b: 'c' } ] }]),
+        equal: true
+      },
+      {
+        description: 'complex set not equal',
+        value1: new Set([1, { a: [ { b: 'c' } ] }]),
+        value2: new Set([1, { a: [ { b: 'd' } ] }]),
+        equal: false
+      },
+      {
+        description: 'sets of sets',
+        value1: new Set([1, new Set([2])]),
+        value2: new Set([1, new Set([2])]),
+        equal: true
+      },
+      {
+        description: 'sets of sets not equal',
+        value1: new Set([1, new Set([2])]),
+        value2: new Set([1, new Set([3])]),
         equal: false
       }
     ]
