@@ -1,4 +1,3 @@
-'use strict';
 /* global Map:readonly, Set:readonly, ArrayBuffer:readonly */
 
 var hasElementType = typeof Element !== 'undefined';
@@ -7,7 +6,7 @@ var hasSet = typeof Set === 'function';
 var hasArrayBuffer = typeof ArrayBuffer === 'function';
 
 function equal(a, b) {
-  var length, i, key, it;
+  var i, it;
   if (a === b) {
     return true;
   } else if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
@@ -15,27 +14,25 @@ function equal(a, b) {
   } else if (a.constructor !== b.constructor) {
     return false;
   } else if (Array.isArray(a)) {
-    length = a.length;
-    if (length != b.length) return false;
-    for (i = length; i-- !== 0;)
+    if ((i = a.length) != b.length) return false;
+    while (i--)
       if (!equal(a[i], b[i])) return false;
   } else if (hasMap && a instanceof Map) {
     if (a.size !== b.size) return false;
     it = a.entries();
-    for (i = it.next(); !i.done; i = it.next())
-      if (!b.has(i.value[0])) return false;
-    it = a.entries();
-    for (i = it.next(); !i.done; i = it.next())
-      if (!equal(i.value[1], b.get(i.value[0]))) return false;
+    while (!(i = it.next()).done)
+      if (
+        !b.has(i.value[0]) ||
+        !equal(i.value[1], b.get(i.value[0]))
+      ) return false;
   } else if (hasSet && a instanceof Set) {
     if (a.size !== b.size) return false;
     it = a.entries();
-    for (i = it.next(); !i.done; i = it.next())
+    while (!(i = it.next()).done)
       if (!b.has(i.value[0])) return false;
   } else if (hasArrayBuffer && ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-    length = a.length;
-    if (length != b.length) return false;
-    for (i = length; i-- !== 0;)
+    if ((i = a.length) != b.length) return false;
+    while (i--)
       if (a[i] !== b[i]) return false;
   } else if (a instanceof RegExp) {
     return a.source === b.source && a.flags === b.flags;
@@ -46,21 +43,15 @@ function equal(a, b) {
   } else if (hasElementType && a instanceof Element) {
     return false;
   } else {
-    i = 0;
-    for (key in a) {
-      if (!Object.prototype.hasOwnProperty.call(a, key)) {
-        continue;
-      } else if (
-        (key !== '_owner' || !a.$$typeof) &&
-        (!Object.prototype.hasOwnProperty.call(b, key) || !equal(a[key], b[key]))
-      ) {
-        return false;
-      }
-
-      i++;
+    it = Object.keys(a);
+    if ((i = it.length) !== Object.keys(b).length) return false;
+    while (i--) {
+      if (
+        (it[i] !== '_owner' || !a.$$typeof) &&
+          (!(it[i] in b) ||
+            !equal(a[it[i]], b[it[i]]))
+      ) return false;
     }
-
-    if (i !== Object.keys(b).length) return false;
   }
 
   return true;
