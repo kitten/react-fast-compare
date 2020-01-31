@@ -7,15 +7,29 @@ var hasArrayBuffer = typeof ArrayBuffer === 'function';
 
 function equal(a, b) {
   var i = -1, length, it;
-  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
+
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object')
     return a === b || (a !== a && b !== b);
-  } else if (a.constructor !== b.constructor) {
-    return false;
-  } else if (Array.isArray(a)) {
+  if (
+    a.constructor !== b.constructor ||
+    (hasElementType && a instanceof Element)
+  ) return false;
+
+  if (Array.isArray(a)) {
     if ((length = a.length) != b.length) return false;
     while (++i < length)
       if (!equal(a[i], b[i])) return false;
-  } else if (hasMap && a instanceof Map) {
+    return true;
+  }
+
+  if (hasArrayBuffer && ArrayBuffer.isView(a)) {
+    if ((length = a.length) != b.length) return false;
+    while (++i < length)
+      if (a[i] !== b[i]) return false;
+    return true;
+  }
+
+  if (hasMap && a instanceof Map) {
     if (a.size !== b.size) return false;
     it = a.entries();
     while (!(i = it.next()).done)
@@ -23,33 +37,32 @@ function equal(a, b) {
         !b.has(i.value[0]) ||
         !equal(i.value[1], b.get(i.value[0]))
       ) return false;
-  } else if (hasSet && a instanceof Set) {
+    return true;
+  }
+
+  if (hasSet && a instanceof Set) {
     if (a.size !== b.size) return false;
     it = a.entries();
     while (!(i = it.next()).done)
       if (!b.has(i.value[0])) return false;
-  } else if (hasArrayBuffer && ArrayBuffer.isView(a)) {
-    if ((length = a.length) != b.length) return false;
-    while (++i < length)
-      if (a[i] !== b[i]) return false;
-  } else if (a instanceof RegExp) {
+    return true;
+  }
+
+  if (a instanceof RegExp)
     return a.source === b.source && a.flags === b.flags;
-  } if (a.valueOf !== Object.prototype.valueOf) {
+  if (a.valueOf !== Object.prototype.valueOf)
     return a.valueOf() === b.valueOf();
-  } else if (a.toString !== Object.prototype.toString) {
+  if (a.toString !== Object.prototype.toString)
     return a.toString() === b.toString();
-  } else if (hasElementType && a instanceof Element) {
-    return false;
-  } else {
-    it = Object.keys(a);
-    if ((length = it.length) !== Object.keys(b).length) return false;
-    while (++i < length) {
-      if (
-        (it[i] !== '_owner' || !a.$$typeof) &&
-          (!(it[i] in b) ||
-            !equal(a[it[i]], b[it[i]]))
-      ) return false;
-    }
+
+  it = Object.keys(a);
+  if ((length = it.length) !== Object.keys(b).length) return false;
+  while (++i < length) {
+    if (
+      (it[i] !== '_owner' || !a.$$typeof) &&
+        (!(it[i] in b) ||
+          !equal(a[it[i]], b[it[i]]))
+    ) return false;
   }
 
   return true;
