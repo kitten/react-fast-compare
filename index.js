@@ -6,16 +6,14 @@ var hasSet = typeof Set === 'function';
 var hasArrayBuffer = typeof ArrayBuffer === 'function';
 
 function equal(a, b) {
-  var i, it;
-  if (a === b) {
-    return true;
-  } else if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
-    return a !== a && b !== b;
+  var i = -1, length, it;
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
+    return a === b || (a !== a && b !== b);
   } else if (a.constructor !== b.constructor) {
     return false;
   } else if (Array.isArray(a)) {
-    if ((i = a.length) != b.length) return false;
-    while (i--)
+    if ((length = a.length) != b.length) return false;
+    while (++i < length)
       if (!equal(a[i], b[i])) return false;
   } else if (hasMap && a instanceof Map) {
     if (a.size !== b.size) return false;
@@ -30,9 +28,9 @@ function equal(a, b) {
     it = a.entries();
     while (!(i = it.next()).done)
       if (!b.has(i.value[0])) return false;
-  } else if (hasArrayBuffer && ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-    if ((i = a.length) != b.length) return false;
-    while (i--)
+  } else if (hasArrayBuffer && ArrayBuffer.isView(a)) {
+    if ((length = a.length) != b.length) return false;
+    while (++i < length)
       if (a[i] !== b[i]) return false;
   } else if (a instanceof RegExp) {
     return a.source === b.source && a.flags === b.flags;
@@ -44,8 +42,8 @@ function equal(a, b) {
     return false;
   } else {
     it = Object.keys(a);
-    if ((i = it.length) !== Object.keys(b).length) return false;
-    while (i--) {
+    if ((length = it.length) !== Object.keys(b).length) return false;
+    while (++i < length) {
       if (
         (it[i] !== '_owner' || !a.$$typeof) &&
           (!(it[i] in b) ||
